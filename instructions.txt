@@ -1,0 +1,133 @@
+EOT
+  http://www.cnfcpp.tn
+  E-mail: Sup admin : brahim.mekni@gmail.com| IPST Sousse: ipstsousse@cnfcpp.tn | IPST Tunis: ipsttunis@cnfcpp.tn | IPST Sfax : ipstsfax@cnfcpp.tn | IPST Gabés: ipstgabes@
+Instructions
+Mini Projet DevOps - CI/CD et Docker
+1. Objectif du mini-projet
+Ce mini-projet consiste à créer une petite application web simple, à la conteneuriser avec Docker, puis à mettre en place un pipeline CI/CD automatisé permettant de :
+Construire l'image Docker de l'application
+Exécuter les tests automatiquement
+Déployer l'application sur un environnement de test (staging)
+Le projet doit être déposé sur Moodle sous forme d'atelier (instructions plus bas).
+2. Technologies imposées
+Git et GitHub
+Docker et Docker Hub
+GitHub Actions pour CI/CD
+3. Architecture du mini projet
+L'application à développer est une simple API HTTP affichant un message JSON.
+Structure du projet
+mini-projet-devops/
+├── app.js
+├── package.json
+├── Dockerfile
+├── .github/
+│ └── workflows/
+│ └── ci.yml
+└── README.md
+4. Partie 1 : Développement de l'application
+4.1 Création de l'application Node.js
+Créer un fichier app.js :
+const http = require('http');
+const server = http.createServer((req, res) => {
+ res.writeHead(200, {"Content-Type": "application/json"});
+ res.end(JSON.stringify({ message: "Application DevOps opérationnelle" }));
+});
+server.listen(3000, () => {
+ console.log("Serveur lancé sur le port 3000");
+});
+Créer le fichier package.json :
+   
+Accueil  Mes cours  UR Gafsa  ISET Gafsa  Technologie Informatique  5/6 s_2026  Atelier DevOps  Mini projet  Instructions
+houimli ali Administration
+{
+ "name": "mini-projet-devops",
+ "version": "1.0.0",
+ "main": "app.js",
+ "scripts": {
+ "start": "node app.js",
+ "test": "echo 'Tests OK'"
+ }
+}
+5. Partie 2 : Conteneurisation avec Docker
+5.1 Dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+5.2 Commandes Docker à exécuter
+docker build -t votrenom/mini-projet-devops:v1 .
+docker run -p 3000:3000 votrenom/mini-projet-devops:v1
+5.3 Publication sur Docker Hub
+docker login
+docker push votrenom/mini-projet-devops:v1
+6. Partie 3 : Pipeline CI/CD (GitHub Actions)
+6.1 Arborescence
+.github/workflows/ci.yml
+Administration
+6.2 Pipeline complet CI/CD
+name: CI/CD Pipeline
+on:
+ push:
+ branches: [ main ]
+ pull_request:
+ branches: [ main ]
+jobs:
+ build-test:
+ runs-on: ubuntu-latest
+ steps:
+ - name: Récupération du code
+ uses: actions/checkout@v2
+ - name: Installation Node.js
+ uses: actions/setup-node@v2
+ with:
+ node-version: 18
+ - name: Installation dépendances
+ run: npm install
+ - name: Tests
+ run: npm test
+ docker-deploy:
+ needs: build-test
+ runs-on: ubuntu-latest
+ steps:
+ - name: Checkout
+ uses: actions/checkout@v2
+ - name: Connexion Docker Hub
+ run: |
+ echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+ - name: Build image
+ run: docker build -t votrenom/mini-projet-devops:${{ github.sha }} .
+ - name: Push image
+ run: docker push votrenom/mini-projet-devops:${{ github.sha }}
+6.3 Secrets à ajouter sur GitHub
+DOCKER_USERNAME : nom Docker Hub
+DOCKER_PASSWORD : mot de passe Docker Hub
+7. Partie 4 : Dépôt sur Moodle (Atelier)
+7.1 Contenu à déposer
+Vous devez fournir dans votre atelier Moodle :
+Le lien GitHub du projet public
+Le lien de l'image Docker Hub
+Une archive ZIP contenant :
+Tous les fichiers du projet
+Le Dockerfile
+Le workflow GitHub Actions
+Un document PDF ou HTML expliquant :
+Comment fonctionne votre pipeline CI/CD
+Les commandes Docker utilisées
+Un screenshot de l'exécution du workflow GitHub Actions
+Un screenshot du conteneur en fonctionnement
+8. Critères d'évaluation
+Application fonctionnelle
+Image Docker fonctionnelle et publiée
+Pipeline CI/CD opérationnel
+Dépôt clair, structuré et bien documenté
+Rapport complet
+9. Bonus (optionnel)
+Déploiement automatique sur VPS ou Render
+Tests unitaires réels
+Tags Docker versionnés (v1, v2, etc.)
+Administration
+Modifié le: mardi 3 mars 2026, 22:04
+Administration
